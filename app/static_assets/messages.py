@@ -7,8 +7,17 @@ welcome = """
     """
 
 player_manage = """
-    Please select an option:
+    Player Management Interface. Please select an option:
     1: Add a Player
     2: Delete a Player
     3: Back
+    """
+
+league_manage = """
+    League Management Interface. Please select an option:
+    1: Create a league
+    2: Generate next round's matches
+    3: Generate leaderboard
+    4: Delete last matches for a league
+    5: Back
     """

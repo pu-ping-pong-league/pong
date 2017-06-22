@@ -1,4 +1,7 @@
 from sqlalchemy import and_, func, case, desc
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
+
+from app import db
 
 WIN = 2
 
