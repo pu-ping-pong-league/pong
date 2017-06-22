@@ -18,6 +18,6 @@ league_manage = """
     1: Create a league
     2: Generate next round's matches
     3: Generate leaderboard
-    4: Delete last matches for a league
+    4: Delete last round's matches
     5: Back
     """
