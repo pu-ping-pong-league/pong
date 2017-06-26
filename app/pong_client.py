@@ -60,6 +60,12 @@ def generate_leaderboard(league_id, results_csv):
     keys = models.Player.key_fields()
     csv_export(csv_name, league_players, keys)
 
+def delete_last_matches(league_id):
+    league = models.League.get_league_by_id(league_id)
+    target_matches = models.Match.query.filter_by(league=league_id, round_count=round_count)
+    for match in target_matches: 
+        match.delete()
+
 def add_player(email, name, league_id):
     player = models.Player(row['Email'], row['Full_Name'], league.league_id)
     player.commit()
@@ -68,37 +74,7 @@ def delete_player(player_email):
     player = models.Player.query.filter_by(email=player_email).first()
     player.delete()
 
-def delete_last_matches(league_id):
-    league = models.League.get_league_by_id(league_id)
-    target_matches = models.Match.query.filter_by(league=league_id, round_count=round_count)
-    for match in target_matches: 
-        match.delete()
 
-def main():
-    welcome_text = """
-    Welcome to the Ping Pong League Manager!
-    Please select an option:
-    1: League Management
-    2: Player Management
-    3: Exit
-    """
-    invalid_option:"""
-    Invalid choice!
-    Please select an appropriate option:
-    1: League Management
-    2: Player Management
-    3: Exit
-    """
-    option1 = raw_input(welcome_text)
-    while(true):
-        if option1 == 1:
-
-        elif option1 == 2:
-
-        elif option1 == 3:
-            exit()
-        else:
-            raw_input(invalid_option)
 
 
 
@@ -109,3 +85,4 @@ def main():
 # add ssh key to github
 # build a client main to run upon execution
 # elo system
+# add error statements

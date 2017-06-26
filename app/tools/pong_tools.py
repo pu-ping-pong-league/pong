@@ -2,7 +2,7 @@ from app.mod_api import models
 from general_purpose_tools import *
 
 def match_em(league, players, unmatched_player_id):
-	if unmatched_player_id:
+    if unmatched_player_id:
         # add player to the beginning of players list
         unmatched_player_id = None
 
@@ -26,7 +26,7 @@ def match_em(league, players, unmatched_player_id):
     return unmatched_player_id
 
 def format_matches(matches):
-	formatted_matches = list()
+    formatted_matches = list()
     for match in matches:
         formatted_match = dict()
         formatted_match['Match_id'] = match.match_id

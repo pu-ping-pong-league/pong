@@ -1,4 +1,7 @@
 from sqlalchemy import and_, func, case, desc
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
+
+from app import db
 
 WIN = 2
 
@@ -6,7 +9,9 @@ class League(db.Model):
     league_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     league_name = db.Column(db.String(255), unique=True, nullable=False)
     round_count = db.Column(db.Integer, nullable=False, default=0)
-
+    players = db.relationship('Player', backref='league', lazy='dynamic')
+    matches = db.relationship('Match', backref='league', lazy='dynamic')
+    
     def __init__(self, name):
         self.league_name = name
 
@@ -19,9 +24,15 @@ class League(db.Model):
     def get_league_by_id(league_id):
         return League.query.filter_by(league_id=league_id).first()
 
+matches = db.Table('matches',
+    db.Column('match_id', db.ForeignKey('match.match_id')),
+    db.Column('player', db.ForeignKey('player.player_id'))   
+)
+
 class Player(db.Model):
     player_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    league = db.relationship('League', backref='player', lazy='dynamic')
+    league_id = db.Column(db.Integer, db.ForeignKey('league.league_id'))
+    matches = db.relationship('Match', secondary=matches, backref=db.backref('players', lazy='select'))
     email = db.Column(db.String(255), unique=True, nullable=False)
     name = db.Column(db.String(255), unique=True, nullable=False)
     games_won = db.Column(db.Integer, nullable=False, default=0)
@@ -73,13 +84,11 @@ class Player(db.Model):
 
 class Match(db.Model):
     match_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    league = db.relationship('League', backref='match', lazy='dynamic')
+    league_id = db.Column(db.Integer, db.ForeignKey('league.league_id'))
     round_count = db.Column(db.Integer, nullable=False, default=0)
-    player1 = db.relationship('Player', backref='match', lazy='dynamic')
-    player2 = db.relationship('Player', backref='match', lazy='dynamic')
     completed = db.Column(db.Boolean, nullable=False, default=False)
-    score_player1 = games_won = db.Column(db.Integer, default=None)
-    score_player2 = games_won = db.Column(db.Integer, default=None)
+    score_player1 = db.Column(db.Integer, default=None)
+    score_player2 = db.Column(db.Integer, default=None)
 
     def __init__(self, league_id, round_count, p1_id, p2_id):
         self.league = league_id
