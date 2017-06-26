@@ -1,23 +1,40 @@
+import traceback
+
+from app import db
 from mod_api import models
 from tools.pong_tools import *
 from tools.general_purpose_tools import *
 
+
 def create_league(league_csv):    
     # create league instance
-    league_name = league_csv.split('.')[0]
-    league = models.League(league_name)
-    league.commit(insert=True)
+    try:
+        league_name = league_csv.split('.')[0]
+        league = models.League(name=league_name)
+        db.session.add(league)
+        db.session.commit()
+    except:
+        db.session.rollback()
+        traceback.print_exc()
+        return
 
     # create and add players to the league
     players = list()
     with open(league_csv, 'rb') as csvfile:
-        player_reader = csv.Dictreader(csvfile)
+        player_reader = csv.DictReader(csvfile)
         for row in player_reader:
-            players.append(row)
-            player = models.Player(row['Email'], row['Full_Name'], league.league_id)
-            player.commit(insert=True)
+            try:
+                players.append(row)
+                player = models.Player(league_id=league, email=row['Email'], name=row['Full_Name'])
+                db.session.add(player)
+                db.session.commit()
+            # block duplicates
+            except:
+                print row['Full_Name'], 'failed.'
+                db.session.rollback()
+                # traceback.print_exc()            
 
-    return players
+    print players
 
 def generate_matches(league_id, test=False):
     # fetch league and update round count

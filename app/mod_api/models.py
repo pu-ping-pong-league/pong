@@ -7,13 +7,13 @@ WIN = 2
 
 class League(db.Model):
     league_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    league_name = db.Column(db.String(255), unique=True, nullable=False)
+    name = db.Column(db.String(255), unique=True, nullable=False)
     round_count = db.Column(db.Integer, nullable=False, default=0)
     players = db.relationship('Player', backref='league', lazy='dynamic')
     matches = db.relationship('Match', backref='league', lazy='dynamic')
     
     def __init__(self, name):
-        self.league_name = name
+        self.name = name
 
     def commit(self, insert=False):
         if insert:
@@ -24,15 +24,15 @@ class League(db.Model):
     def get_league_by_id(league_id):
         return League.query.filter_by(league_id=league_id).first()
 
-matches = db.Table('matches',
-    db.Column('match_id', db.ForeignKey('match.match_id')),
-    db.Column('player', db.ForeignKey('player.player_id'))   
-)
+# matches = db.Table('matches',
+#     db.Column('match_id', db.ForeignKey('match.match_id')),
+#     db.Column('player', db.ForeignKey('player.player_id'))   
+# )
 
 class Player(db.Model):
     player_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    league_id = db.Column(db.Integer, db.ForeignKey('league.league_id'))
-    matches = db.relationship('Match', secondary=matches, backref=db.backref('players', lazy='select'))
+    league_id = db.Column(db.Integer, db.ForeignKey('league.league_id'), nullable=False)
+    #matches = db.relationship('Match', secondary=matches, backref=db.backref('players', lazy='select'))
     email = db.Column(db.String(255), unique=True, nullable=False)
     name = db.Column(db.String(255), unique=True, nullable=False)
     games_won = db.Column(db.Integer, nullable=False, default=0)
@@ -49,10 +49,10 @@ class Player(db.Model):
     def net_sets(self):
         return self.sets_won - self.sets_lost
 
-    def __init__(self, email, name, league_id):
-        self.email = email
-        self.name = name
+    def __init__(self, league_id, email, name):
         self.league = league_id
+        self.email = email
+        self.name = name        
 
     def commit(self, insert=False):
         if insert:
@@ -98,24 +98,24 @@ class Match(db.Model):
         if not p2_id:
             score_player1 = WIN        
 
-    def commit(self, insert=False):
-        if insert:
-            db.session.add(self)
-        db.session.commit()
+#     def commit(self, insert=False):
+#         if insert:
+#             db.session.add(self)
+#         db.session.commit()
 
-    def update_score(self, score_player1, score_player2):
-        if score_player1 and score_player2:
-            self.completed = True
-        self.score_player1 = score_player1
-        self.score_player2 = score_player2        
-        self.commit()
+#     def update_score(self, score_player1, score_player2):
+#         if score_player1 and score_player2:
+#             self.completed = True
+#         self.score_player1 = score_player1
+#         self.score_player2 = score_player2        
+#         self.commit()
 
-    def delete(self):
-        db.session.delete(self)
-        db.session.commit()
+#     def delete(self):
+#         db.session.delete(self)
+#         db.session.commit()
 
-    @staticmethod
-    def get_match_by_id(match_id):
-        return Match.query.filter_by(match_id=match_id).first()
+#     @staticmethod
+#     def get_match_by_id(match_id):
+#         return Match.query.filter_by(match_id=match_id).first()
 
 
