@@ -24,8 +24,9 @@ def create_league(league_csv):
         player_reader = csv.DictReader(csvfile)
         for row in player_reader:
             try:
+                validate_email(email=row['Email'], name=row['Full_Name'])
                 players.append(row)
-                player = models.Player(league_id=league, email=row['Email'], name=row['Full_Name'])
+                player = models.Player(league=league, email=row['Email'], name=row['Full_Name'])
                 db.session.add(player)
                 db.session.commit()
             # block duplicates
@@ -84,22 +85,46 @@ def delete_last_matches(league_id):
         match.delete()
 
 def add_player(email, name, league_id):
-    player = models.Player(row['Email'], row['Full_Name'], league.league_id)
-    player.commit()
+    try:
+        league = models.League.get_league_by_id(int(league_id))
+        player = models.Player(league, email, name)
+        player.commit(insert=True)
+        print name, 'successfully added.'
+    except:
+        db.session.rollback()
+        traceback.print_exc()  
+        return
 
 def delete_player(player_email):
-    player = models.Player.query.filter_by(email=player_email).first()
-    player.delete()
+    try:
+        player = models.Player.get_player_by_email(player_email)
+        name = player.name
+        player.delete()
+        print name, 'successfully deleted.'
+    except:
+        db.session.rollback()
+        traceback.print_exc()  
+        return
+
+def get_player_stats(player_email):
+    try:
+        player = models.Player.get_player_by_email(player_email)
+        stats = dict(league=player.league.name, victories=player.games_won, losses=player.games_lost,
+                     sets_won=player.sets_won, sets_lost=player.sets_lost, penalty_points=player.penalty_points, rating=player.rating)
+        print '\nPlayer stats of', player.name, ':\n'
+        for k,v in sorted(stats.iteritems()):
+            print k, '=', v
+    except:
+        print 'Invalid email. Please enter a valid email.'
+        # traceback.print_exc()  
+        return    
 
 
 
 
 
-
-# TO DO:
+# Debt:
 # adjust repeated matches 
 # retain matches when player quits the league --> check sqlalchemy signature for foreign keys
 # add ssh key to github
-# build a client main to run upon execution
 # elo system
-# add error statements

@@ -1,5 +1,6 @@
 from app.static_assets import messages    
 from app.pong_client import *
+from app.tools.general_purpose_tools import *
 
 import traceback
 
@@ -53,20 +54,25 @@ def player_manage():
         method = raw_input(messages.player_manage)
         if method == '1':
             email = raw_input("Enter player's email:")
+            validate_email(email)
             name = raw_input("Enter player's full name:")
             league_id = raw_input("Enter league's id:")
             add_player(email, name, league_id)
             return 2
         elif method == '2':
             email = raw_input("Enter player's email:")
-            delete_player(player_email)
+            delete_player(email)
             return 2
         elif method == '3':
+            email = raw_input("Enter player's email:")
+            get_player_stats(email)
+            return 2
+        elif method == '4':
             return 0
         else:
             return 2
     except:
-        traceback.print_exc()
+        # traceback.print_exc()
         return 2
 
 def dfs(state):

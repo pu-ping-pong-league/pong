@@ -10,7 +10,8 @@ player_manage = """
     Player Management Interface. Please select an option:
     1: Add a Player
     2: Delete a Player
-    3: Back
+    3: Get Player Stats
+    4: Back
     """
 
 league_manage = """

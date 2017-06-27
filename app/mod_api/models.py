@@ -40,6 +40,7 @@ class Player(db.Model):
     sets_won = db.Column(db.Integer, nullable=False, default=0)
     sets_lost = db.Column(db.Integer, nullable=False, default=0)
     penalty_points = db.Column(db.Integer, nullable=False, default=0)
+    rating = db.Column(db.Integer, nullable=False, default=1000)
 
     @hybrid_property
     def net_wins(self):
@@ -49,8 +50,8 @@ class Player(db.Model):
     def net_sets(self):
         return self.sets_won - self.sets_lost
 
-    def __init__(self, league_id, email, name):
-        self.league = league_id
+    def __init__(self, league, email, name):
+        self.league = league
         self.email = email
         self.name = name        
 
@@ -77,6 +78,10 @@ class Player(db.Model):
     @staticmethod
     def get_player_by_id(player_id):
         return Player.query.filter_by(player_id=player_id).first()
+
+    @staticmethod
+    def get_player_by_email(player_email):
+        return Player.query.filter_by(email=player_email).first()
 
     @staticmethod
     def key_fields():
