@@ -32,7 +32,8 @@ Run the pong interface assuming setup has been performed:
       
     Run the Pong Interface:
     $ python run.py
- 
+
+Disclaimer: This is stil work under development. Some features of the league management system do not work yet.
     
     
     
