@@ -9,3 +9,6 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 SQLALCHEMY_DATABASE_URI ='mysql+pymysql://web2pyuser:password@localhost/pong'
 DATABASE_CONNECT_OPTIONS = {}
 SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+VICTORY = 2
+BYE = 'Bye'

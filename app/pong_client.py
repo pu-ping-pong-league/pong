@@ -1,6 +1,6 @@
 import traceback
 
-from app import db
+from app import app, db
 from mod_api import models
 from tools.pong_tools import *
 from tools.general_purpose_tools import *
@@ -38,34 +38,39 @@ def create_league(league_csv):
     print players
 
 def generate_matches(league_id, test=False):
-    # fetch league and update round count
-    league = models.League.get_league_by_id(league_id)
-    if not test:
-        league.round_count = league.round_count + 1
-        self.commit()
-    league.commit()
+    try:
+        # fetch league and update round count
+        league = models.League.get_league_by_id(league_id)
+        if not test:
+            league.round_count = league.round_count + 1            
 
-    order = models.Player.net_wins.desc()
-    all_players = models.Player.query.filter_by(league=league_id).order_by(order).all() 
+        # fetch players of league in descending order of net wins
+        all_players = league.get_all_players_sorted_by_net_wins()
+        count = len(all_players)
+        wins = all_players[0].net_wins # do programattically
+        
+        # first-middle matching
+        unmatched_player = None
+        while count > 0 and wins >= 0:
+            current_win_players = league.get_all_players_sorted_by_net_sets(wins)
+            if current_win_players:
+                unmatched_player = match_em(league, current_win_players, unmatched_player)
+                count = count - len(current_win_players)
+            wins = wins - 1
 
-    count = len(all_players)
-    max_wins = all_players[0]['net_wins']
-    
-    # first-middle matching
-    unmatched_player_id = None
-    order = models.Player.net_sets.desc()
-    while count > 0:
-        players = models.Player.query.filter_by(league=league_id, net_wins=wins).order_by(order).all()
-        unmatched_player_id = match_em(league, players, unmatched_player_id)
-        count = count - players_len
-        wins = wins - 1
+        # Case of odd number of players; generate bye match (no opponent)
+        if unmatched_player:
+            new_match = models.Match_(league, unmatched_player.name, app.config['BYE'])
+            db.session.add(new_match)            
 
-    # Bye case
-    if unmatched_player_id:
-        new_match = models.Match(league.league_id, league.round_count, unmatched_player_id, None)
-        new_match.commit(insert=True)
+        export_matches(league)
+        db.session.commit()
+    except:
+        db.session.rollback()
+        print 'Failed to generate new matches for', league.name, 'round', league.round_count
+        # traceback.print_exc()  
+        return
 
-    export_matches(league_id, league.round_count)
 
 def generate_leaderboard(league_id, results_csv):
     process_results(results_csv)
@@ -80,7 +85,7 @@ def generate_leaderboard(league_id, results_csv):
 
 def delete_last_matches(league_id):
     league = models.League.get_league_by_id(league_id)
-    target_matches = models.Match.query.filter_by(league=league_id, round_count=round_count)
+    target_matches = models.Match_.query.filter_by(league=league_id, round_count=round_count)
     for match in target_matches: 
         match.delete()
 
@@ -120,11 +125,19 @@ def get_player_stats(player_email):
         return    
 
 
-
+"""
+Next steps:
+1) Process Results
+2) Test Match Generation and Result Processing
+3) Programmatic Calculation of Player Stats and resolve League backref to matches
+4) Proper deletion of players
+5) Handle Repeated Matchups
+"""
 
 
 # Debt:
 # adjust repeated matches 
-# retain matches when player quits the league --> check sqlalchemy signature for foreign keys
 # add ssh key to github
 # elo system
+# ensure delete player does not delete matches 
+# compute player stats programmatically (also adjust line 50 in this file)
