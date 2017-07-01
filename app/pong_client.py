@@ -127,11 +127,13 @@ def get_player_stats(player_email):
 
 """
 Next steps:
-1) Results processing: penalty points
-2) Test Match Generation and Result Processing
-3) Programmatic Calculation of Player Stats and resolve League backref to matches
+1) Revamp processes: 1.2, 1.3, 2.3
+2) Unit testing: Test Match Generation and Result Processing 
+2.5) proper deletion of matchups
+3) resolve League backref to matches
 4) Proper deletion of players
 5) Handle Repeated Matchups
+6) adjust get stats format and include net wins and net losses
 """
 
 

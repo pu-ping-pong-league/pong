@@ -1,4 +1,4 @@
-from sqlalchemy import and_, func, case, desc
+from sqlalchemy import and_, func, case, desc, or_
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 
 from app import db
@@ -42,20 +42,61 @@ class Player(db.Model):
     league_id = db.Column(db.Integer, db.ForeignKey('league.league_id'), nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
     name = db.Column(db.String(255), unique=True, nullable=False)
-    games_won = db.Column(db.Integer, nullable=False, default=0)
-    games_lost = db.Column(db.Integer, nullable=False, default=0)
-    sets_won = db.Column(db.Integer, nullable=False, default=0)
-    sets_lost = db.Column(db.Integer, nullable=False, default=0)
-    penalty_points = db.Column(db.Integer, nullable=False, default=0)
     rating = db.Column(db.Integer, nullable=False, default=1000)
 
-    @hybrid_property
-    def net_wins(self):
-        return self.games_won - self.games_lost
+    def match_stats(self):
+        matches_won = 0
+        matches_lost = 0
 
-    @hybrid_property
-    def net_sets(self):
-        return self.sets_won - self.sets_lost
+        # match stats when player is player 1
+        matches_p1 = Match_.query.filter_by(player1_name=self.name, completed=True).all()
+        for match in matches_p1:
+            if match.score_player1 == app.config['VICTORY']:
+                matches_won = matches_won + 1
+            else:
+                matches_lost = matches_lost + 1
+
+        # match stats when player is player 2
+        matches_p2 = Match_.query.filter_by(player2_name=self.name, completed=True).all()
+        for match in matches_p2:
+            if match.score_player2 == app.config['VICTORY']:
+                matches_won = matches_won + 1
+            else:
+                matches_lost = matches_lost + 1        
+
+        points = matches_won - matches_lost
+        return points, matches_won, matches_lost         
+
+    def set_stats(self):
+        sets_won = 0
+        sets_lost = 0
+
+        # sets stats when player is player 1
+        matches_p1 = Match_.query.filter_by(player1_name=self.name, completed=True).all()
+        for match in matches_p1:
+            sets_won = sets_won + match.score_player1
+            sets_lost = sets_lost + match.score_player2
+
+        # sets stats when player is player 2
+        matches_p2 = Match_.query.filter_by(player2_name=self.name, completed=True).all()
+        for match in matches_p2:
+            sets_won = sets_won + match.score_player2
+            sets_lost = sets_lost + match.score_player1        
+
+        net_sets = sets_won - sets_lost
+        return net_sets, sets_won, sets_lost
+
+    def penalty_points(self):
+        penalty_points =0
+        matches = Match_.query.filter(and_(or_(player1_name=self.name, player2_name=self.name), completed=True)).all()
+        for match in matches:
+            if (match.score_player1 + match.score_player2) <= 0:
+                penalty_points = penalty_points + 1
+                if penalty_points >= app.config['PENALTY THRESHOLD']:
+                    self.delete()
+                    break
+
+        return penalty_points
 
     def __init__(self, league, email, name):
         self.league = league
@@ -81,7 +122,7 @@ class Player(db.Model):
 
     @staticmethod
     def key_fields():
-        return ['email', 'name', 'games_won', 'games_lost', 'net_wins', 'sets_won', 'sets_lost', 'net_sets', 'penalty_points']
+        return ['email', 'name', 'matches_won', 'matches_lost', 'net_wins', 'sets_won', 'sets_lost', 'net_sets', 'penalty_points']
 
 class Match_(db.Model):
     match_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -107,7 +148,7 @@ class Match_(db.Model):
     def update_score(self, score_player1, score_player2):
         self.completed = True
         self.score_player1 = score_player1
-        self.score_player2 = score_player2        
+        self.score_player2 = score_player2
         self.commit()
 
     def delete(self):
