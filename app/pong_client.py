@@ -74,14 +74,14 @@ def generate_matches(league_id, test=False):
 
 def generate_leaderboard(league_id, results_csv):
     process_results(results_csv)
-    league = models.League.get_league_by_id(league_id)
+    # league = models.League.get_league_by_id(league_id)
 
-    # generate leaderboard csv
-    csv_name = league.name + ' - Leaderboard Round ' + str(league.round_count) + '.csv'
-    order = models.Player.net_wins.desc()
-    league_players = models.Player.query.filter_by(league=league_id).order_by(order).all() # figure out how to order by two parameters
-    keys = models.Player.key_fields()
-    csv_export(csv_name, league_players, keys)
+    # # generate leaderboard csv
+    # csv_name = league.name + ' - Leaderboard Round ' + str(league.round_count) + '.csv'
+    # order = models.Player.net_wins.desc()
+    # league_players = models.Player.query.filter_by(league=league_id).order_by(order).all() # figure out how to order by two parameters
+    # keys = models.Player.key_fields()
+    # csv_export(csv_name, league_players, keys)
 
 def delete_last_matches(league_id):
     league = models.League.get_league_by_id(league_id)

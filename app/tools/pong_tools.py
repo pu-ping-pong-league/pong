@@ -53,13 +53,9 @@ def export_matches(league):
 
 def process_results(results_csv):
     # create and add players to the league
-    with open(resuts_csv, 'rb') as csvfile:
-        matches_reader = csv.Dictreader(csvfile)
+    with open(results_csv, 'rb') as csvfile:
+        matches_reader = csv.DictReader(csvfile)
         for row in matches_reader:
-            match = models.Match_.get_match_by_id(row['Match_id'])
-            match.update_score(row['Score_player1'], row['Score_player2'])
-            player1 = models.Player.get_player_by_id(row['Player1_id'])
-            player1.update_stats(row['Score_player1'])
-            player2 = models.Player.get_player_by_id(row['Player2_id'])
-            player2.update_stats(row['Score_player2'])
+            match = models.Match_.get_match_by_id(row['Match Id'])
+            match.update_score(row['Score Player 1'], row['Score Player 2'])
 

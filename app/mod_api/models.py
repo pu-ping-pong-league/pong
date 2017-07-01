@@ -68,16 +68,6 @@ class Player(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-    def update_stats(self, score):
-        if score == WIN:
-            self.games_won = self.games_won + 1
-            self.sets_won = self.sets_won + WIN
-        elif score < WIN:
-            self.sets_won = self.sets_won + WIN
-        else:
-            self.penalty_points = self.penalty_points + 1
-        self.commit()
-
     @staticmethod
     def get_player_by_id(player_id):
         return Player.query.filter_by(player_id=player_id).first()
