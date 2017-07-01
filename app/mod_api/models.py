@@ -26,6 +26,9 @@ class League(db.Model):
         order = Player.net_sets.desc()
         return Player.query.filter_by(league_id=self.league_id, net_wins=net_wins).order_by(order).all()
 
+    def get_all_players_sorted(self):
+        return Player.query.order_by(Player.net_wins.desc(), Player.net_sets.desc()).all()
+
     def get_ordered_matches_for_round(self, round_count):
         order = Match_.match_id.asc()
         return Match_.query.filter_by(league_id=self.league_id, round_count=round_count).order_by(order) 

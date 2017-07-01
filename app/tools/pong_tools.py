@@ -29,6 +29,14 @@ def match_em(league, players, unmatched_player):
 
     return unmatched_player
 
+def format_players(players):
+    # format players list for csv export
+    for i in range(len(players)):
+        players[i] = players[i].__dict__
+        del players[i]['rating'], players[i]['_sa_instance_state'], players[i]['league_id'], players[i]['player_id']
+        players[i]['net_wins'] = players[i]['games_won'] - players[i]['games_lost']
+        players[i]['net_sets'] = players[i]['sets_won'] - players[i]['sets_lost']
+
 def format_matches(matches):
     formatted_matches = list()
     for match in matches:
@@ -58,4 +66,7 @@ def process_results(results_csv):
         for row in matches_reader:
             match = models.Match_.get_match_by_id(row['Match Id'])
             match.update_score(row['Score Player 1'], row['Score Player 2'])
+
+
+    
 

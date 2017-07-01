@@ -74,14 +74,14 @@ def generate_matches(league_id, test=False):
 
 def generate_leaderboard(league_id, results_csv):
     process_results(results_csv)
-    # league = models.League.get_league_by_id(league_id)
+    league = models.League.get_league_by_id(league_id)
 
-    # # generate leaderboard csv
-    # csv_name = league.name + ' - Leaderboard Round ' + str(league.round_count) + '.csv'
-    # order = models.Player.net_wins.desc()
-    # league_players = models.Player.query.filter_by(league=league_id).order_by(order).all() # figure out how to order by two parameters
-    # keys = models.Player.key_fields()
-    # csv_export(csv_name, league_players, keys)
+    # generate leaderboard csv
+    csv_name = league.name + ' - Leaderboard Round ' + str(league.round_count) + '.csv'
+    league_players = league.get_all_players_sorted()
+    format_players(league_players)
+    keys = models.Player.key_fields()
+    csv_export(csv_name, league_players, keys)
 
 def delete_last_matches(league_id):
     league = models.League.get_league_by_id(league_id)
@@ -127,7 +127,7 @@ def get_player_stats(player_email):
 
 """
 Next steps:
-1) Process Results
+1) Results processing: penalty points
 2) Test Match Generation and Result Processing
 3) Programmatic Calculation of Player Stats and resolve League backref to matches
 4) Proper deletion of players
@@ -139,5 +139,4 @@ Next steps:
 # adjust repeated matches 
 # add ssh key to github
 # elo system
-# ensure delete player does not delete matches 
 # compute player stats programmatically (also adjust line 50 in this file)
