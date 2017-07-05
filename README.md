@@ -1,4 +1,4 @@
-# pong
+# pong - MVP version
 Interface for Managing the Princeton University Ping Pong League
 
 Dependencies: virtualenv, mysql, python 2.7
@@ -33,7 +33,6 @@ Run the pong interface assuming setup has been performed:
     Run the Pong Interface:
     $ python run.py
 
-Disclaimer: This is still work in progress. Some features of the league management system do not work yet.
 
     
     
