@@ -9,13 +9,13 @@ from tools.general_purpose_tools import *
 def create_league(league_csv):    
     # create league instance
     try:
-        league_name = league_csv.split('.')[0]
+        league_name = league_csv.split('.')[0] ## small back upon creation with non existent csv
         league = models.League(name=league_name)
         db.session.add(league)
         db.session.commit()
     except:
         db.session.rollback()
-        traceback.print_exc()
+        # traceback.print_exc()
         return
 
     # create and add players to the league
@@ -31,12 +31,11 @@ def create_league(league_csv):
                 db.session.commit()
             # block duplicates
             except:
-                print row['Full_Name'], 'failed.'
+                print row['Full_Name'], 'creation failed.'
                 db.session.rollback()
-                # traceback.print_exc()            
+                # traceback.print_exc()     
 
-    print players
-
+    
 def generate_matches(league_id, test=False):
     try:
         # fetch league and update round count
@@ -44,19 +43,25 @@ def generate_matches(league_id, test=False):
         if not test:
             league.round_count = league.round_count + 1            
 
-        # fetch players of league in descending order of net wins
-        all_players = league.get_all_players_sorted_by_net_wins()
+        # update player stats and fetch players of league in descending order of net wins
+        all_players = league.get_all_players_sorted()
         count = len(all_players)
-        wins = all_players[0].net_wins # do programattically
+        ref_points = all_players[0].net_wins
         
         # first-middle matching
         unmatched_player = None
-        while count > 0 and wins >= 0:
-            current_win_players = league.get_all_players_sorted_by_net_sets(wins)
-            if current_win_players:
-                unmatched_player = match_em(league, current_win_players, unmatched_player)
-                count = count - len(current_win_players)
-            wins = wins - 1
+        while len(all_players) > 0 and ref_points >= 0:
+            current_players = list()
+            for i in range(len(all_players)):
+                player_points = all_players[i].net_wins
+                if player_points == ref_points:
+                    current_players.append(all_players[i])
+                elif player_points < ref_points:
+                    del all_players[i]
+                    break
+            if current_players:
+                unmatched_player = match_em(league, current_players, unmatched_player)
+            ref_points = ref_points - 1
 
         # Case of odd number of players; generate bye match (no opponent)
         if unmatched_player:
@@ -68,20 +73,26 @@ def generate_matches(league_id, test=False):
     except:
         db.session.rollback()
         print 'Failed to generate new matches for', league.name, 'round', league.round_count
-        # traceback.print_exc()  
+        traceback.print_exc()  
         return
 
 
 def generate_leaderboard(league_id, results_csv):
-    process_results(results_csv)
-    league = models.League.get_league_by_id(league_id)
+    try:
+        process_results(results_csv)
+        league = models.League.get_league_by_id(league_id)
 
-    # generate leaderboard csv
-    csv_name = league.name + ' - Leaderboard Round ' + str(league.round_count) + '.csv'
-    league_players = league.get_all_players_sorted()
-    format_players(league_players)
-    keys = models.Player.key_fields()
-    csv_export(csv_name, league_players, keys)
+        # generate leaderboard csv
+        csv_name = league.name + ' - Leaderboard Round ' + str(league.round_count) + '.csv'
+        league_players = league.get_all_players_sorted()
+        format_players(league_players)
+        keys = models.Player.key_fields()
+        csv_export(csv_name, league_players, keys)
+    except:
+        db.session.rollback()
+        print 'Failed to generate leaderboard for', league.name, 'round', league.round_count
+        traceback.print_exc()  
+        return
 
 def delete_last_matches(league_id):
     league = models.League.get_league_by_id(league_id)

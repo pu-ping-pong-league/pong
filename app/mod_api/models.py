@@ -1,7 +1,7 @@
 from sqlalchemy import and_, func, case, desc, or_
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 
-from app import db
+from app import app, db
 
 class League(db.Model):
     league_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -18,16 +18,15 @@ class League(db.Model):
             db.session.add(self)
         db.session.commit()
 
-    def get_all_players_sorted_by_net_wins(self):
-        order = Player.net_wins.desc()
-        return Player.query.filter_by(league_id=self.league_id).order_by(order).all() 
-
-    def get_all_players_sorted_by_net_sets(self, net_wins):
-        order = Player.net_sets.desc()
-        return Player.query.filter_by(league_id=self.league_id, net_wins=net_wins).order_by(order).all()
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
 
     def get_all_players_sorted(self):
-        return Player.query.order_by(Player.net_wins.desc(), Player.net_sets.desc()).all()
+        all_players = Player.query.filter_by(league_id=self.league_id).all()
+        for player in all_players:
+            player.update_stats()
+        return Player.query.filter_by(league_id=self.league_id).order_by(Player.net_wins.desc(), Player.net_sets.desc()).all()
 
     def get_ordered_matches_for_round(self, round_count):
         order = Match_.match_id.asc()
@@ -42,11 +41,34 @@ class Player(db.Model):
     league_id = db.Column(db.Integer, db.ForeignKey('league.league_id'), nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
     name = db.Column(db.String(255), unique=True, nullable=False)
+    matches_won = db.Column(db.Integer, nullable=False, default=0)
+    matches_lost = db.Column(db.Integer, nullable=False, default=0)
+    sets_won = db.Column(db.Integer, nullable=False, default=0)
+    sets_lost = db.Column(db.Integer, nullable=False, default=0)
+    penalty_points = db.Column(db.Integer, nullable=False, default=0)
     rating = db.Column(db.Integer, nullable=False, default=1000)
+  
+    @hybrid_property
+    def net_wins(self):
+        return self.matches_won - self.matches_lost
 
-    def match_stats(self):
+    @hybrid_property
+    def net_sets(self):
+        return self.sets_won - self.sets_lost
+
+    def update_stats(self):
+        player_stats = self.get_stats()
+        self.matches_won = player_stats[0]
+        self.matches_lost = player_stats[1]
+        self.sets_won = player_stats[2]
+        self.sets_lost = player_stats[3] 
+        self.commit()
+
+    def get_stats(self):
         matches_won = 0
         matches_lost = 0
+        sets_won = 0
+        sets_lost = 0
 
         # match stats when player is player 1
         matches_p1 = Match_.query.filter_by(player1_name=self.name, completed=True).all()
@@ -55,6 +77,8 @@ class Player(db.Model):
                 matches_won = matches_won + 1
             else:
                 matches_lost = matches_lost + 1
+            sets_won = sets_won + match.score_player1
+            sets_lost = sets_lost + match.score_player2
 
         # match stats when player is player 2
         matches_p2 = Match_.query.filter_by(player2_name=self.name, completed=True).all()
@@ -62,32 +86,16 @@ class Player(db.Model):
             if match.score_player2 == app.config['VICTORY']:
                 matches_won = matches_won + 1
             else:
-                matches_lost = matches_lost + 1        
-
-        points = matches_won - matches_lost
-        return points, matches_won, matches_lost         
-
-    def set_stats(self):
-        sets_won = 0
-        sets_lost = 0
-
-        # sets stats when player is player 1
-        matches_p1 = Match_.query.filter_by(player1_name=self.name, completed=True).all()
-        for match in matches_p1:
-            sets_won = sets_won + match.score_player1
-            sets_lost = sets_lost + match.score_player2
-
-        # sets stats when player is player 2
-        matches_p2 = Match_.query.filter_by(player2_name=self.name, completed=True).all()
-        for match in matches_p2:
+                matches_lost = matches_lost + 1
             sets_won = sets_won + match.score_player2
             sets_lost = sets_lost + match.score_player1        
 
+        points = matches_won - matches_lost
         net_sets = sets_won - sets_lost
-        return net_sets, sets_won, sets_lost
+        return [matches_won, matches_lost, sets_won, sets_lost]         
 
     def penalty_points(self):
-        penalty_points =0
+        penalty_points = 0
         matches = Match_.query.filter(and_(or_(player1_name=self.name, player2_name=self.name), completed=True)).all()
         for match in matches:
             if (match.score_player1 + match.score_player2) <= 0:
@@ -122,7 +130,7 @@ class Player(db.Model):
 
     @staticmethod
     def key_fields():
-        return ['email', 'name', 'matches_won', 'matches_lost', 'net_wins', 'sets_won', 'sets_lost', 'net_sets', 'penalty_points']
+        return ['email', 'name', 'net_wins', 'matches_won', 'matches_lost', 'net_sets', 'sets_won', 'sets_lost', 'penalty_points']
 
 class Match_(db.Model):
     match_id = db.Column(db.Integer, primary_key=True, autoincrement=True)

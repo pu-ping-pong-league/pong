@@ -34,7 +34,7 @@ def format_players(players):
     for i in range(len(players)):
         players[i] = players[i].__dict__
         del players[i]['rating'], players[i]['_sa_instance_state'], players[i]['league_id'], players[i]['player_id']
-        players[i]['net_wins'] = players[i]['games_won'] - players[i]['games_lost']
+        players[i]['net_wins'] = players[i]['matches_won'] - players[i]['matches_lost']
         players[i]['net_sets'] = players[i]['sets_won'] - players[i]['sets_lost']
 
 def format_matches(matches):
