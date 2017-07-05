@@ -56,56 +56,6 @@ class Player(db.Model):
     def net_sets(self):
         return self.sets_won - self.sets_lost
 
-    def update_stats(self):
-        player_stats = self.get_stats()
-        self.matches_won = player_stats[0]
-        self.matches_lost = player_stats[1]
-        self.sets_won = player_stats[2]
-        self.sets_lost = player_stats[3] 
-        self.commit()
-
-    def get_stats(self):
-        matches_won = 0
-        matches_lost = 0
-        sets_won = 0
-        sets_lost = 0
-
-        # match stats when player is player 1
-        matches_p1 = Match_.query.filter_by(player1_name=self.name, completed=True).all()
-        for match in matches_p1:
-            if match.score_player1 == app.config['VICTORY']:
-                matches_won = matches_won + 1
-            else:
-                matches_lost = matches_lost + 1
-            sets_won = sets_won + match.score_player1
-            sets_lost = sets_lost + match.score_player2
-
-        # match stats when player is player 2
-        matches_p2 = Match_.query.filter_by(player2_name=self.name, completed=True).all()
-        for match in matches_p2:
-            if match.score_player2 == app.config['VICTORY']:
-                matches_won = matches_won + 1
-            else:
-                matches_lost = matches_lost + 1
-            sets_won = sets_won + match.score_player2
-            sets_lost = sets_lost + match.score_player1        
-
-        points = matches_won - matches_lost
-        net_sets = sets_won - sets_lost
-        return [matches_won, matches_lost, sets_won, sets_lost]         
-
-    def penalty_points(self):
-        penalty_points = 0
-        matches = Match_.query.filter(and_(or_(player1_name=self.name, player2_name=self.name), completed=True)).all()
-        for match in matches:
-            if (match.score_player1 + match.score_player2) <= 0:
-                penalty_points = penalty_points + 1
-                if penalty_points >= app.config['PENALTY THRESHOLD']:
-                    self.delete()
-                    break
-
-        return penalty_points
-
     def __init__(self, league, email, name):
         self.league = league
         self.email = email
@@ -119,6 +69,66 @@ class Player(db.Model):
     def delete(self):
         db.session.delete(self)
         db.session.commit()
+
+    def update_stats(self):
+        # check if player is above the penalty points limit
+        penalty_points = self.get_penalty_points()
+        if penalty_points >= app.config['PENALTY_THRESHOLD']:
+            self.delete()
+        else:
+            # update player stats
+            self.penalty_points = penalty_points
+            player_stats = self.get_stats()
+            self.matches_won = player_stats[0]
+            self.matches_lost = player_stats[1]
+            self.sets_won = player_stats[2]
+            self.sets_lost = player_stats[3]
+            self.commit()
+
+    def get_stats(self):
+        matches_won = 0
+        matches_lost = 0
+        sets_won = 0
+        sets_lost = 0
+
+        # match stats when player is player 1
+        matches_p1 = Match_.query.filter_by(player1_name=self.name, completed=True).all()
+        for match in matches_p1:
+            # check if match has been played
+            if (match.score_player1 + match.score_player2) > 0:
+                if match.score_player1 == app.config['VICTORY']:
+                    matches_won = matches_won + 1
+                else:
+                    matches_lost = matches_lost + 1
+                sets_won = sets_won + match.score_player1
+                sets_lost = sets_lost + match.score_player2
+
+        # match stats when player is player 2
+        matches_p2 = Match_.query.filter_by(player2_name=self.name, completed=True).all()
+        for match in matches_p2:
+            # check if match has been played
+            if (match.score_player1 + match.score_player2) > 0:
+                if match.score_player2 == app.config['VICTORY']:
+                    matches_won = matches_won + 1
+                else:
+                    matches_lost = matches_lost + 1
+                sets_won = sets_won + match.score_player2
+                sets_lost = sets_lost + match.score_player1        
+
+        points = matches_won - matches_lost
+        net_sets = sets_won - sets_lost
+        return [matches_won, matches_lost, sets_won, sets_lost]         
+
+    def get_penalty_points(self):
+        penalty_points = 0
+        matches = Match_.query.filter(and_(or_(Match_.player1_name==self.name, Match_.player2_name==self.name), Match_.completed)).all()
+        for match in matches:
+            if (match.score_player1 + match.score_player2) <= 0:
+                penalty_points = penalty_points + 1
+                if penalty_points >= app.config['PENALTY_THRESHOLD']:
+                    return penalty_points
+
+        return penalty_points
 
     @staticmethod
     def get_player_by_id(player_id):
@@ -153,15 +163,15 @@ class Match_(db.Model):
             db.session.add(self)
         db.session.commit()
 
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
     def update_score(self, score_player1, score_player2):
         self.completed = True
         self.score_player1 = score_player1
         self.score_player2 = score_player2
         self.commit()
-
-    def delete(self):
-        db.session.delete(self)
-        db.session.commit()
 
     @staticmethod
     def get_match_by_id(match_id):

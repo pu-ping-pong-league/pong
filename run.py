@@ -39,7 +39,7 @@ def league_manage():
         elif method == '4':
             league_id = raw_input("Enter league's id:")
             delete_last_matches(league_id)
-            return 0
+            return 1
         elif method == '5':
             return 0
         else:

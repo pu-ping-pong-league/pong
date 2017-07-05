@@ -78,8 +78,8 @@ def generate_matches(league_id, test=False):
 
 def generate_leaderboard(league_id, results_csv):
     try:
-        process_results(results_csv)
         league = models.League.get_league_by_id(league_id)
+        process_results(results_csv)
 
         # generate leaderboard csv
         csv_name = league.name + ' - Leaderboard Round ' + str(league.round_count) + '.csv'
@@ -94,10 +94,18 @@ def generate_leaderboard(league_id, results_csv):
         return
 
 def delete_last_matches(league_id):
-    league = models.League.get_league_by_id(league_id)
-    target_matches = models.Match_.query.filter_by(league=league_id, round_count=round_count)
-    for match in target_matches: 
-        match.delete()
+    try:
+        league = models.League.get_league_by_id(league_id)
+        target_matches = models.Match_.query.filter_by(league_id=league_id, round_count=league.round_count)
+        for match in target_matches: 
+            match.delete()
+        league.round_count = league.round_count - 1
+        league.commit()
+    except:
+        db.session.rollback()
+        print 'Failed to delet last matches for', league.name, 'round', league.round_count
+        traceback.print_exc()  
+        return
 
 def add_player(email, name, league_id):
     try:
@@ -107,7 +115,7 @@ def add_player(email, name, league_id):
         print name, 'successfully added.'
     except:
         db.session.rollback()
-        traceback.print_exc()  
+        # traceback.print_exc()  
         return
 
 def delete_player(player_email):
@@ -118,37 +126,26 @@ def delete_player(player_email):
         print name, 'successfully deleted.'
     except:
         db.session.rollback()
-        traceback.print_exc()  
+        # traceback.print_exc()  
         return
 
 def get_player_stats(player_email):
     try:
         player = models.Player.get_player_by_email(player_email)
-        stats = dict(league=player.league.name, victories=player.games_won, losses=player.games_lost,
-                     sets_won=player.sets_won, sets_lost=player.sets_lost, penalty_points=player.penalty_points, rating=player.rating)
+        stats = dict(league=player.league.name, net_wins=player.net_wins, wins=player.matches_won, losses=player.matches_lost,
+                     net_sets=player.net_sets, sets_won=player.sets_won, sets_lost=player.sets_lost, penalty_points=player.penalty_points, rating=player.rating)
         print '\nPlayer stats of', player.name, ':\n'
         for k,v in sorted(stats.iteritems()):
             print k, '=', v
     except:
         print 'Invalid email. Please enter a valid email.'
-        # traceback.print_exc()  
+        traceback.print_exc()  
         return    
 
 
 """
-Next steps:
-1) Revamp processes: 1.2, 1.3, 2.3
-2) Unit testing: Test Match Generation and Result Processing 
-2.5) proper deletion of matchups
-3) resolve League backref to matches
-4) Proper deletion of players
+Next steps: 
 5) Handle Repeated Matchups
-6) adjust get stats format and include net wins and net losses
+7) test for auto deletion based on penalty points
+8) ratings
 """
-
-
-# Debt:
-# adjust repeated matches 
-# add ssh key to github
-# elo system
-# compute player stats programmatically (also adjust line 50 in this file)
