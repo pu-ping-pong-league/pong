@@ -3,8 +3,7 @@ Interface for Managing the Princeton University Ping Pong League
 
 Dependencies: virtualenv, mysql, python 2.7
 
-MySQL username: web2pyuser
-/ MySQL password: password
+Adjust config.py file based on your preferences.
 
 Setup and first execution:
 
