@@ -45,19 +45,18 @@ def generate_matches(league_id, test=False):
 
         # update player stats and fetch players of league in descending order of net wins
         all_players = league.get_all_players_sorted()
-        count = len(all_players)
         ref_points = all_players[0].net_wins
-        
+        min_points = all_players[-1].net_wins
+
         # first-middle matching
         unmatched_player = None
-        while len(all_players) > 0 and ref_points >= 0:
+        while ref_points >= min_points:
             current_players = list()
             for i in range(len(all_players)):
                 player_points = all_players[i].net_wins
                 if player_points == ref_points:
                     current_players.append(all_players[i])
                 elif player_points < ref_points:
-                    del all_players[i]
                     break
             if current_players:
                 unmatched_player = match_em(league, current_players, unmatched_player)
