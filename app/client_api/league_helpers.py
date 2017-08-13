@@ -1,9 +1,9 @@
 import traceback
 
 from app import app, db
-from mod_api import models
-from tools.pong_tools import *
-from tools.general_purpose_tools import *
+from app.mod_api import models
+from app.tools.pong_tools import *
+from app.tools.general_purpose_tools import *
 
 
 def create_league(league_csv):    
@@ -12,28 +12,42 @@ def create_league(league_csv):
         league_name = league_csv.split('.')[0] ## small back upon creation with non existent csv
         league = models.League(name=league_name)
         db.session.add(league)
-        db.session.commit()
+  
+        # create and add players to the league
+        players = list()
+        with open(league_csv, 'rb') as csvfile:
+            # initialize league if csv loaded succesfully
+            player_reader = csv.DictReader(csvfile)
+            db.session.commit()
+            print league_name, '--> initialized successfully'
+
+            players_added = 0
+            duplicate_entries_found = 0
+
+            for row in player_reader:
+                try:
+                    validate_email(email=row['Email'], name=row['Full_Name'])
+                    players.append(row)
+                    player = models.Player(league=league, email=row['Email'], name=row['Full_Name'])
+                    db.session.add(player)
+                    db.session.commit()
+                    players_added = players_added + 1
+                # block duplicates
+                except:
+                    print row['Full_Name'], 'creation failed.'
+                    db.session.rollback()
+                    duplicate_entries_found = duplicate_entries_found + 1
+                    # traceback.print_exc() 
     except:
         db.session.rollback()
+        print league_name, '--> initialization failed'
         # traceback.print_exc()
         return
 
-    # create and add players to the league
-    players = list()
-    with open(league_csv, 'rb') as csvfile:
-        player_reader = csv.DictReader(csvfile)
-        for row in player_reader:
-            try:
-                validate_email(email=row['Email'], name=row['Full_Name'])
-                players.append(row)
-                player = models.Player(league=league, email=row['Email'], name=row['Full_Name'])
-                db.session.add(player)
-                db.session.commit()
-            # block duplicates
-            except:
-                print row['Full_Name'], 'creation failed.'
-                db.session.rollback()
-                # traceback.print_exc()     
+    print '------------------SUMMARY------------------'
+    print 'Number of Players Initialized:', players_added
+    print 'Number of Duplicate Entries:', duplicate_entries_found
+    print '-------------------------------------------'   
 
     
 def generate_matches(league_id, test=False):
@@ -106,46 +120,3 @@ def delete_last_matches(league_id):
         print 'Failed to delet last matches for', league.name, 'round', league.round_count
         traceback.print_exc()  
         return
-
-def add_player(email, name, league_id):
-    try:
-        league = models.League.get_league_by_id(int(league_id))
-        player = models.Player(league, email, name)
-        player.commit(insert=True)
-        print name, 'successfully added.'
-    except:
-        db.session.rollback()
-        # traceback.print_exc()  
-        return
-
-def delete_player(player_email):
-    try:
-        player = models.Player.get_player_by_email(player_email)
-        name = player.name
-        player.delete()
-        print name, 'successfully deleted.'
-    except:
-        db.session.rollback()
-        # traceback.print_exc()  
-        return
-
-def get_player_stats(player_email):
-    try:
-        player = models.Player.get_player_by_email(player_email)
-        stats = dict(league=player.league.name, net_wins=player.net_wins, wins=player.matches_won, losses=player.matches_lost,
-                     net_sets=player.net_sets, sets_won=player.sets_won, sets_lost=player.sets_lost, penalty_points=player.penalty_points, rating=player.rating)
-        print '\nPlayer stats of', player.name, ':\n'
-        for k,v in sorted(stats.iteritems()):
-            print k, '=', v
-    except:
-        print 'Invalid email. Please enter a valid email.'
-        traceback.print_exc()  
-        return    
-
-
-"""
-Next steps: 
-5) Handle Repeated Matchups
-7) test for auto deletion based on penalty points
-8) ratings
-"""

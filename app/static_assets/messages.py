@@ -3,15 +3,8 @@ welcome = """
     Please select an option:
     1: League Management
     2: Player Management
-    3: Exit
-    """
-
-player_manage = """
-    Player Management Interface. Please select an option:
-    1: Add a Player
-    2: Delete a Player
-    3: Get Player Stats
-    4: Back
+    3: Match Management
+    4: Exit
     """
 
 league_manage = """
@@ -22,3 +15,19 @@ league_manage = """
     4: Delete last round's matches
     5: Back
     """
+
+player_manage = """
+    Player Management Interface. Please select an option:
+    1: Add a Player
+    2: Delete a Player
+    3: Get Player Stats
+    4: Back
+    """
+
+match_manage = """
+    Match Management Interface. Please select an option:
+    1: Update a Match
+    2: Back
+    """
+
+

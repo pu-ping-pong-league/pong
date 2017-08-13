@@ -139,6 +139,10 @@ class Player(db.Model):
         return Player.query.filter_by(email=player_email).first()
 
     @staticmethod
+    def get_player_by_name(player_name):
+        return Player.query.filter_by(name=player_name).first()
+
+    @staticmethod
     def key_fields():
         return ['email', 'name', 'net_wins', 'matches_won', 'matches_lost', 'net_sets', 'sets_won', 'sets_lost', 'penalty_points']
 
@@ -167,8 +171,10 @@ class Match_(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-    def update_score(self, score_player1, score_player2):
+    def update_score(self, player1_name, player2_name, score_player1, score_player2):
         self.completed = True
+        self.player1_name = player1_name
+        self.player2_name = player2_name
         self.score_player1 = score_player1
         self.score_player2 = score_player2
         self.commit()

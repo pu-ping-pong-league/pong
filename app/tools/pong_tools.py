@@ -65,7 +65,7 @@ def process_results(results_csv):
         matches_reader = csv.DictReader(csvfile)
         for row in matches_reader:
             match = models.Match_.get_match_by_id(row['Match Id'])
-            match.update_score(row['Score Player 1'], row['Score Player 2'])
+            match.update_score(row['Player 1'], row['Player 2'], row['Score Player 1'], row['Score Player 2'])
 
 
     
