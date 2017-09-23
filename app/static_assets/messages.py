@@ -27,7 +27,8 @@ player_manage = """
 match_manage = """
     Match Management Interface. Please select an option:
     1: Update a Match
-    2: Back
+    2: Adjust Match Result
+    3: Back
     """
 
 

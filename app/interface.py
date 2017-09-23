@@ -93,11 +93,20 @@ def match_manage():
 
             return 3
         elif method == '2':
+            match_id = int(raw_input("Enter match id:"))
+            mapi.print_match_details(match_id)
+
+            score_p1 = raw_input("Enter Score Player 1:")
+            score_p2 = raw_input("Enter Score Player 2:")
+            mapi.adjust_result(match_id, int(score_p1), int(score_p2))
+
+            return 3
+        elif method == '3':
             return 0
         else:
             return 3
     except:
-        # traceback.print_exc()
+        traceback.print_exc()
         return 3
 
 

@@ -34,9 +34,39 @@ def update_match(match_id, email_p1, email_p2):
             player2.update_stats()
             old_player1.update_stats()
             old_player2.update_stats()
+
+            print '\n'
+            print_match_details(match_id)
         else:
             db.session.rollback()
             print 'Players with given email not identified.'
+            return
+    except:
+        db.session.rollback()
+        traceback.print_exc()
+        return
+
+def adjust_result(match_id, score_p1, score_p2):
+    try:    
+        match = models.Match_.get_match_by_id(match_id)
+
+        # fetch players
+        player1 = models.Player.get_player_by_name(match.player1_name)
+        player2 = models.Player.get_player_by_name(match.player2_name)
+
+        # update match if players found
+        if match is not None and player1 is not None and player2 is not None:  
+            match.update_score(match.player1_name, match.player2_name, score_p1, score_p2)
+
+            # update player_stats
+            player1.update_stats()
+            player2.update_stats()
+
+            print '\n'
+            print_match_details(match_id)
+        else:
+            db.session.rollback()
+            print 'Match not identified.'
             return
     except:
         db.session.rollback()
