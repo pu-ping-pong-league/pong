@@ -50,17 +50,9 @@ def adjust_result(match_id, score_p1, score_p2):
     try:    
         match = models.Match_.get_match_by_id(match_id)
 
-        # fetch players
-        player1 = models.Player.get_player_by_name(match.player1_name)
-        player2 = models.Player.get_player_by_name(match.player2_name)
-
-        # update match if players found
-        if match is not None and player1 is not None and player2 is not None:  
+        # update match if found
+        if match is not None:  
             match.update_score(match.player1_name, match.player2_name, score_p1, score_p2)
-
-            # update player_stats
-            player1.update_stats()
-            player2.update_stats()
 
             print '\n'
             print_match_details(match_id)
