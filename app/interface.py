@@ -46,6 +46,11 @@ def league_manage():
             lapi.delete_last_matches(league_id)
             return 1
         elif method == '5':
+            league1_id = raw_input("Enter league 1 id:")
+            league2_id = raw_input("Enter league 2 id:")
+            lapi.generate_crossleague_matches(league1_id, league2_id)
+            return 1
+        elif method == '6':
             return 0
         else:
             return 1

@@ -13,7 +13,8 @@ league_manage = """
     2: Generate next round's matches
     3: Generate leaderboard
     4: Delete last round's matches
-    5: Back
+    5: Generate cross-league matches
+    6: Back
     """
 
 player_manage = """

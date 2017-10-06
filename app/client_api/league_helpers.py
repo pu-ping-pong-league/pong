@@ -62,7 +62,7 @@ def generate_matches(league_id, test=False):
         ref_points = all_players[0].net_wins
         min_points = all_players[-1].net_wins
 
-        # first-middle matching
+        # first-middle fold matching
         unmatched_player = None
         while ref_points >= min_points:
             current_players = list()
@@ -89,9 +89,54 @@ def generate_matches(league_id, test=False):
         traceback.print_exc()  
         return
 
+# cross league matches with league_id league1_id
+def generate_crossleague_matches(league1_id, league2_id, test=False):
+    try:
+        # fetch leagues and update round count
+        league1 = models.League.get_league_by_id(league1_id)
+        league2 = models.League.get_league_by_id(league2_id)
+        if not test:
+            league1.round_count = league1.round_count + 1    
+            league2.round_count = league2.round_count + 1           
+
+        # fetch players of each league in descending order of net wins
+        l1_players = league1.get_all_players_sorted()
+        l2_players = league2.get_all_players_sorted()
+        max_league = l1_players if len(l1_players) > len(l2_players) else l2_players
+        min_league = l1_players if len(l1_players) <= len(l2_players) else l2_players
+         
+        # create matchups between two leagues
+        for i in range(len(min_league)):
+            player1 = l1_players[i].name
+            player2 = l2_players[i].name
+            new_match = models.Match_(league1, player1, player2)
+            db.session.add(new_match)
+
+        # Case of odd number of remaining players; generate bye match (no opponent)
+        diff = len(max_league) - len(min_league) 
+        for j in range(diff / 2):
+            player1 = max_league[2 * j + len(min_league)].name
+            player2 = max_league[2 * j + 1 + len(min_league)].name
+            new_match = models.Match_(league1, player1, player2)
+            db.session.add(new_match)
+
+        # handle leftout player case
+        if diff % 2 == 1:
+            new_match = models.Match_(league1,  max_league[len(max_league) - 1].name, app.config['BYE'])
+            db.session.add(new_match)            
+
+        export_matches(league1)
+        db.session.commit()
+    except:
+        db.session.rollback()
+        print 'Failed to generate new matches for', league.name, 'round', league.round_count
+        traceback.print_exc()  
+        return
+
 
 def generate_leaderboard(league_id, results_csv):
     try:
+        # updated match results based on match ids
         league = models.League.get_league_by_id(league_id)
         process_results(results_csv)
 
