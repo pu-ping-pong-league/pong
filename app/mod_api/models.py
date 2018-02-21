@@ -93,7 +93,8 @@ class Player(db.Model):
         sets_lost = 0
 
         # match stats when player is player 1
-        matches_p1 = Match_.query.filter_by(player1_name=self.name, completed=True).all()
+        matches_p1 = Match_.query.filter_by(player1_name=self.name,
+                                            league_id=self.league_id, completed=True).all()
         for match in matches_p1:
             # check if match has been played
             if (match.score_player1 + match.score_player2) > 0:
@@ -105,7 +106,8 @@ class Player(db.Model):
                 sets_lost = sets_lost + match.score_player2
 
         # match stats when player is player 2
-        matches_p2 = Match_.query.filter_by(player2_name=self.name, completed=True).all()
+        matches_p2 = Match_.query.filter_by(player2_name=self.name,
+                                            league_id=self.league_id, completed=True).all()
         for match in matches_p2:
             # check if match has been played
             if (match.score_player1 + match.score_player2) > 0:
