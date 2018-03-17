@@ -28,7 +28,7 @@ def league_manage():
     try:
         method = raw_input(messages.league_manage)
         if method == '1':
-            print 'Manually adjust full names and column names before submitting. Columns required: "Full_Name", "Email"'
+            print('Manually adjust full names and column names before submitting. Columns required: "Full_Name", "Email"')
             league_csv = raw_input("Enter league's csv file name:")
             lapi.create_league(league_csv)
             return 1

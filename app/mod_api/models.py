@@ -74,7 +74,7 @@ class Player(db.Model):
         # check if player is above the penalty points limit
         penalty_points = self.get_penalty_points()
         if penalty_points >= app.config['PENALTY_THRESHOLD']:
-            print self.email
+            print(self.email)
             self.delete()
         else:
             # update player stats

@@ -9,7 +9,7 @@ def csv_export(csv_name, rows, keys):
 
 def validate_email(email, name=""):
 	if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-		print name, 'Bad email. Please re-enter email.'
+		print(name, 'Bad email. Please re-enter email.')
 		raise
 
    

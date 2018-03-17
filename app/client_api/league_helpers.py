@@ -19,7 +19,7 @@ def create_league(league_csv):
             # initialize league if csv loaded succesfully
             player_reader = csv.DictReader(csvfile)
             db.session.commit()
-            print league_name, '--> initialized successfully'
+            print(league_name, '--> initialized successfully')
 
             players_added = 0
             duplicate_entries_found = 0
@@ -34,20 +34,20 @@ def create_league(league_csv):
                     players_added = players_added + 1
                 # block duplicates
                 except:
-                    print row['Full_Name'], 'creation failed.'
+                    print(row['Full_Name'], 'creation failed.')
                     db.session.rollback()
                     duplicate_entries_found = duplicate_entries_found + 1
                     # traceback.print_exc() 
     except:
         db.session.rollback()
-        print league_name, '--> initialization failed'
+        print(league_name, '--> initialization failed')
         # traceback.print_exc()
         return
 
-    print '------------------SUMMARY------------------'
-    print 'Number of Players Initialized:', players_added
-    print 'Number of Duplicate Entries:', duplicate_entries_found
-    print '-------------------------------------------'   
+    print('------------------SUMMARY------------------')
+    print('Number of Players Initialized:', players_added)
+    print('Number of Duplicate Entries:', duplicate_entries_found)
+    print('-------------------------------------------')   
 
     
 def generate_matches(league_id, test=False):
@@ -85,7 +85,7 @@ def generate_matches(league_id, test=False):
         db.session.commit()
     except:
         db.session.rollback()
-        print 'Failed to generate new matches for', league.name, 'round', league.round_count
+        print('Failed to generate new matches for', league.name, 'round', league.round_count)
         traceback.print_exc()  
         return
 
@@ -129,7 +129,7 @@ def generate_crossleague_matches(league1_id, league2_id, test=False):
         db.session.commit()
     except:
         db.session.rollback()
-        print 'Failed to generate new matches for', league.name, 'round', league.round_count
+        print('Failed to generate new matches for', league.name, 'round', league.round_count)
         traceback.print_exc()  
         return
 
@@ -148,7 +148,7 @@ def generate_leaderboard(league_id, results_csv):
         csv_export(csv_name, league_players, keys)
     except:
         db.session.rollback()
-        print 'Failed to generate leaderboard for', league.name, 'round', league.round_count
+        print('Failed to generate leaderboard for', league.name, 'round', league.round_count)
         traceback.print_exc()  
         return
 
@@ -162,6 +162,6 @@ def delete_last_matches(league_id):
         league.commit()
     except:
         db.session.rollback()
-        print 'Failed to delet last matches for', league.name, 'round', league.round_count
+        print('Failed to delet last matches for', league.name, 'round', league.round_count)
         traceback.print_exc()  
         return

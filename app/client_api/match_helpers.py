@@ -6,11 +6,11 @@ from app.mod_api import models
 def print_match_details(match_id):
     try:
         match = models.Match_.get_match_by_id(match_id)
-        print models.League.get_league_by_id(match.league_id).name, '- Round', match.round_count
-        print match.player1_name, '-', match.player2_name
-        print 'Score:', match.score_player1, '-', match.score_player2, '\n'
+        print(models.League.get_league_by_id(match.league_id).name, '- Round', match.round_count)
+        print(match.player1_name, '-', match.player2_name)
+        print('Score:', match.score_player1, '-', match.score_player2, '\n')
     except:
-        print 'Match with given match_id could not be fetched.'
+        print('Match with given match_id could not be fetched.')
         raise
 
 def update_match(match_id, email_p1, email_p2):
@@ -35,11 +35,11 @@ def update_match(match_id, email_p1, email_p2):
             old_player1.update_stats()
             old_player2.update_stats()
 
-            print '\n'
+            print('\n')
             print_match_details(match_id)
         else:
             db.session.rollback()
-            print 'Players with given email not identified.'
+            print('Players with given email not identified.')
             return
     except:
         db.session.rollback()
@@ -54,11 +54,11 @@ def adjust_result(match_id, score_p1, score_p2):
         if match is not None:  
             match.update_score(match.player1_name, match.player2_name, score_p1, score_p2)
 
-            print '\n'
+            print('\n')
             print_match_details(match_id)
         else:
             db.session.rollback()
-            print 'Match not identified.'
+            print('Match not identified.')
             return
     except:
         db.session.rollback()
