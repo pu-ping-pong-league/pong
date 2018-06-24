@@ -36,10 +36,14 @@ Interface for managing the Princeton University Ping Pong League. **Dependencies
 ```
 
 ## User Guide:
- To create a new league, you will need a csv file with the information of all the players, adhering to the following format: Then create a league by using the pong interface (Menu Path: 1 - 1). Make sure to jot down the League ID of the generated league, as it is required for performing all core league operations. After you have generated your league, generate your first round matches (Menu Path: 1 - 3).
+To create a new league, you will need a csv file with the information of all the players, adhering to the following format:    
+![alt text](https://github.com/I-C-Karakozis/pong/blob/master/app/static_assets/images/create_league_format.PNG)
+ 
+Then create a league by using the pong interface (Menu Path: 1 - 1). Make sure to jot down the League ID of the generated league, as it is required for performing all core league operations. After you have generated your league, generate your first round matches (Menu Path: 1 - 3).
 
 You have already created your new league. You have generated the first round matches and collected the results. Now what? This section is guiding you through the recommended steps for processing the results, generating the updated leaderboard, and producing the next round matches:  
-1. Manually produce the csv file with the results from the matches of the previous round. Each row should contain a single match in the following format:
+1. Manually produce the csv file with the results from the matches of the previous round. Each row should contain a single match in the following format:  
+![alt text](https://github.com/I-C-Karakozis/pong/blob/master/app/static_assets/images/matches_format.PNG)
 2. Add new players that just joined the league (Menu Path: 2 - 1).  
 **Required input:** League ID and each new player's email and full name. No output.
 3. Process the results and generate the updated leaderboard (Menu Path: 1 - 3).  
