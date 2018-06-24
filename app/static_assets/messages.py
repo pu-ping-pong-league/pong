@@ -1,3 +1,5 @@
+''' This module holds all interface messages shown to the user.'''
+
 welcome = """
     Welcome to the Ping Pong League Manager!
     Please select an option:

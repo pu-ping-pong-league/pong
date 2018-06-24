@@ -3,7 +3,12 @@ import traceback
 from app import app, db
 from app.mod_api import models
 
+"""
+TODO: Handle Repeated Matchups
+"""
+
 def print_match_details(match_id):
+    ''' Print the players and score of the match with the given match_id. '''
     try:
         match = models.Match_.get_match_by_id(match_id)
         print(models.League.get_league_by_id(match.league_id).name, '- Round', match.round_count)
@@ -14,6 +19,10 @@ def print_match_details(match_id):
         raise
 
 def update_match(match_id, email_p1, email_p2):
+    ''' 
+    Update the match with the given match_id by replacing the current players
+    with the ones specified by email_p1 and email_p2. 
+    ''' 
     try:    
         match = models.Match_.get_match_by_id(match_id)
 
@@ -47,13 +56,13 @@ def update_match(match_id, email_p1, email_p2):
         return
 
 def adjust_result(match_id, score_p1, score_p2):
+    ''' Adjust the score of the match with the given match_id to score_p1 - score_p2. '''
     try:    
         match = models.Match_.get_match_by_id(match_id)
 
         # update match if found
         if match is not None:  
             match.update_score(match.player1_name, match.player2_name, score_p1, score_p2)
-
             print('\n')
             print_match_details(match_id)
         else:
@@ -64,11 +73,3 @@ def adjust_result(match_id, score_p1, score_p2):
         db.session.rollback()
         traceback.print_exc()
         return
-
-
-
-"""
-Next steps: 
-5) Handle Repeated Matchups
-7) test for auto deletion based on penalty points
-"""

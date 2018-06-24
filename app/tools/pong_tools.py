@@ -4,12 +4,15 @@ from general_purpose_tools import *
 from app import db
 
 def match_em(league, players, unmatched_player):
+    ''' 
+    Match players from league, e nsuring the unmatched_player gets a 'Bye'. 
+    '''
     # handle potential unmatched player
     if unmatched_player:
         players = [unmatched_player] + players
         unmatched_player = None
 
-    # generate matches usin cut in the middle and overlap format
+    # generate matches using cut in the middle and parallel fold format
     players_len = len(players)
     if players_len % 2 == 0:
         players_middle = players_len / 2  
@@ -30,7 +33,7 @@ def match_em(league, players, unmatched_player):
     return unmatched_player
 
 def format_players(players):
-    # format players list for csv export
+    ''' Format players list for csv export. '''
     for i in range(len(players)):
         players[i] = players[i].__dict__
         del players[i]['rating'], players[i]['_sa_instance_state'], players[i]['league_id'], players[i]['player_id']
@@ -38,6 +41,7 @@ def format_players(players):
         players[i]['net_sets'] = players[i]['sets_won'] - players[i]['sets_lost']
 
 def format_matches(matches):
+    ''' Format matches list for csv export. '''
     formatted_matches = list()
     for match in matches:
         formatted_match = dict()
@@ -51,7 +55,7 @@ def format_matches(matches):
     return formatted_matches
 
 def export_matches(league):
-    # fetch and format matches for csv export
+    ''' Fetch and format matches for csv export. '''
     matches = league.get_ordered_matches_for_round(league.round_count)
     formatted_matches = format_matches(matches)
 
@@ -60,13 +64,10 @@ def export_matches(league):
     csv_export(csv_name, formatted_matches, keys)
 
 def process_results(results_csv):
-    # create and add players to the league
+    ''' Parse results_csv and update match results accoridngly. '''
     with open(results_csv, 'rb') as csvfile:
         matches_reader = csv.DictReader(csvfile)
         for row in matches_reader:
             match = models.Match_.get_match_by_id(row['Match Id'])
             match.update_score(row['Player 1'], row['Player 2'], row['Score Player 1'], row['Score Player 2'])
-
-
-    
-
+            

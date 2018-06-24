@@ -1,5 +1,6 @@
 from app.interface import *
 
+# redirect to selected main menu option
 def dfs(state):
     while state <= 3 and state >= 0:
         if state == 0:
@@ -12,4 +13,6 @@ def dfs(state):
             state = match_manage()
     exit()
 
-dfs(0)
+if __name__ == '__main__':
+    dfs(0)
+    

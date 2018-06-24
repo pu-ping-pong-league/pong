@@ -7,13 +7,14 @@ from app.tools.general_purpose_tools import *
 
 
 def create_league(league_csv):    
-    # create league instance
+    ''' Create league instance. '''
     try:
-        league_name = league_csv.split('.')[0] ## small back upon creation with non existent csv
+        # parse input csv
+        league_name = league_csv.split('.')[0]
         league = models.League(name=league_name)
         db.session.add(league)
   
-        # create and add players to the league
+        # create league
         players = list()
         with open(league_csv, 'rb') as csvfile:
             # initialize league if csv loaded succesfully
@@ -24,6 +25,7 @@ def create_league(league_csv):
             players_added = 0
             duplicate_entries_found = 0
 
+            # create and add players to the new league
             for row in player_reader:
                 try:
                     validate_email(email=row['Email'], name=row['Full_Name'])
@@ -51,6 +53,7 @@ def create_league(league_csv):
 
     
 def generate_matches(league_id, test=False):
+    ''' Generate next round matches for league with given league_id. '''
     try:
         # fetch league and update round count
         league = models.League.get_league_by_id(league_id)
@@ -89,8 +92,8 @@ def generate_matches(league_id, test=False):
         traceback.print_exc()  
         return
 
-# cross league matches with league_id league1_id
 def generate_crossleague_matches(league1_id, league2_id, test=False):
+    ''' Generate cross league matches between leagues specified by league1_id and league2_id. '''
     try:
         # fetch leagues and update round count
         league1 = models.League.get_league_by_id(league1_id)
@@ -135,6 +138,10 @@ def generate_crossleague_matches(league1_id, league2_id, test=False):
 
 
 def generate_leaderboard(league_id, results_csv):
+    ''' 
+    Process results of last round specified by results_csv
+    and generate leaderboard of league with given league_id. 
+    '''
     try:
         # updated match results based on match ids
         league = models.League.get_league_by_id(league_id)
@@ -153,6 +160,7 @@ def generate_leaderboard(league_id, results_csv):
         return
 
 def delete_last_matches(league_id):
+    ''' Delete the last round matches generated for the league with the given league_id. '''
     try:
         league = models.League.get_league_by_id(league_id)
         target_matches = models.Match_.query.filter_by(league_id=league_id, round_count=league.round_count)
