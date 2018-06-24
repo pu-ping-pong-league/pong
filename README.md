@@ -1,8 +1,7 @@
-# pong - MVP version
-Interface for Managing the Princeton University Ping Pong League
-**Dependencies:** virtualenv, mysql, python 2.7
+# pong
+Interface for managing the Princeton University Ping Pong League. **Dependencies:** virtualenv, mysql, python 2.7.
 
-# Setup and first execution:
+## Setup and first execution:
 1. Adjust `config.py` file based on your preferences and include your personal credentials.
 2. Setup virtual environment:
 ```
@@ -22,7 +21,7 @@ Interface for Managing the Princeton University Ping Pong League
     $ python initialize.py
 ```
     
-# Load the pong interface given complete:
+## Load the pong interface given successful setup:
 1. Activate virtual environment:
 ```
     $ source venv/bin/activate
